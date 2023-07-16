@@ -16,5 +16,9 @@ export const productSchema = z.object({
 
 export const productsSchema = z.array(productSchema);
 
-export const favoritesSchema = z.array(z.number().int()).refine(arr => isUnique(arr));
+export const favoritesSchema = z.array(z.number().int()).refine(f => isUnique(f));
 export const boughtSchema = favoritesSchema;
+
+export const productSearchParamsSchema = z.object({
+  id: z.string()
+}).refine(({ id }) => ({ id: Number.parseInt(id) }));

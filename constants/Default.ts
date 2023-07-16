@@ -1,13 +1,10 @@
-import { AppContextObject, AppData, ThemeContextObject, ThemeType } from "@/types";
+import { ThemeContextObject, ThemeType, Transformers } from "@/types";
 import { THEMES } from "@/constants/Themes";
 
 const NOOP = () => {};
 const BOOL_NOOP = (id: number) => false;
 
-export const DEFAULT_APP_CONTEXT_OBJ: AppContextObject = {
-  products: [],
-  favorites: [],
-  bought: [],
+export const DEFAULT_TRANSFORMER_CONTEXT_OBJ: Transformers = {
   addBought: BOOL_NOOP,
   addFavorite: BOOL_NOOP,
   removeFavorite: BOOL_NOOP,

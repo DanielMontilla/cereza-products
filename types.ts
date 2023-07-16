@@ -7,23 +7,15 @@ export type Completed<T> = { state: 'completed', value: T }
 export type Loading = { state: 'loading' }
 export type Error = { state: 'error', errors: string[] }
 
-export type Data<T> = Completed<T> | Loading | Error;
+export type Data<T = undefined> = Completed<T> | Loading | Error;
 
-export type AppData = {
-  products: Product[],
-  favorites: number[],
-  bought: number[],
-}
-
-export type AppDataTransformers = {
-  addFavorite(id: number): boolean,
-  removeFavorite(id: number): boolean,
-  addBought(id: number): boolean,
-  removeBought(id: number): boolean,
+export type Transformers = {
+  addFavorite(id: number): void,
+  removeFavorite(id: number): void,
+  addBought(id: number): void,
+  removeBought(id: number): void,
   clear(): void,
 }
-
-export type AppContextObject = AppData & AppDataTransformers;
 
 export type ThemeType = "dark" | "light";
 
@@ -32,7 +24,9 @@ export type ThemeData = {
   invalidText: string,
   void: string,
   background: string,
-  accent: string,
+  neutral: string,
+  good: string,
+  bad: string,
 }
 
 export type ThemeTransformers = {

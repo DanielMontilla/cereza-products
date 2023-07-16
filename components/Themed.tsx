@@ -5,9 +5,9 @@
 
 import { Text as DefaultText, View as DefaultView } from 'react-native';
 import { useContext } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemeData } from '@/types';
 import { ThemeContext } from '@/constants/Context';
+import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 
 export function useThemeColor(element: keyof ThemeData): string {
@@ -31,10 +31,10 @@ export function View(props: DefaultView['props']) {
   return <DefaultView style={[{ backgroundColor }, style]} {...rest} />;
 }
 
-export function Void(props: DefaultView['props']) {
+export function Void(props: DefaultView['props'] & { save?: boolean }) {
   const backgroundColor = useThemeColor('void');
-  const { style, ...rest } = props
-  return <DefaultView style={[{ backgroundColor, flex: 1 }, style]} {...rest} />;
+  const { style, save, ...rest } = props
+  return <DefaultView style={[{ backgroundColor, flex: 1, paddingTop: save ? getStatusBarHeight() : 0 }, style]} {...rest} />;
 }
 
 export function Spacer({ height, width }: { height?: number, width?: number }) {

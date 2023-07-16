@@ -1,6 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as other from '@expo/vector-icons/'
-import { Tabs, usePathname } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { useThemeColor } from '@/components/Themed';
 
 /**
@@ -15,7 +15,7 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
 
-  const tabBarActiveTintColor = useThemeColor('accent');
+  const tabBarActiveTintColor = useThemeColor('neutral');
   const tabBackgroundColor = useThemeColor('background');
 
   return (
@@ -29,7 +29,7 @@ export default function TabLayout() {
       initialRouteName="products"
     >
       <Tabs.Screen
-        name="products"
+        name="index"
         options={{
           headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="shopping-cart" color={color} />,
@@ -45,59 +45,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
-// function MyTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-//   const backgroundColor = useThemeColor('background');
-
-//   return (
-//     <View style={{ flexDirection: 'row', backgroundColor }}>
-//       {state.routes.map((route, index) => {
-//         const { options } = descriptors[route.key];
-//         const label =
-//           options.tabBarLabel !== undefined
-//             ? options.tabBarLabel
-//             : options.title !== undefined
-//             ? options.title
-//             : route.name;
-
-//         const isFocused = state.index === index;
-
-//         const onPress = () => {
-//           const event = navigation.emit({
-//             type: 'tabPress',
-//             target: route.key,
-//             canPreventDefault: true,
-//           });
-
-//           if (!isFocused && !event.defaultPrevented) {
-//             // The `merge: true` option makes sure that the params inside the tab screen are preserved
-//             navigation.navigate({ name: route.name, merge: true });
-//           }
-//         };
-
-//         const onLongPress = () => {
-//           navigation.emit({
-//             type: 'tabLongPress',
-//             target: route.key,
-//           });
-//         };
-
-//         return (
-//           <TouchableOpacity
-//             accessibilityRole="button"
-//             accessibilityState={isFocused ? { selected: true } : {}}
-//             accessibilityLabel={options.tabBarAccessibilityLabel}
-//             testID={options.tabBarTestID}
-//             onPress={onPress}
-//             onLongPress={onLongPress}
-//             style={{ flex: 1 }}
-//           >
-//             <Text style={{ color: isFocused ? '#673ab7' : '#222' }}>
-//               {label}
-//             </Text>
-//           </TouchableOpacity>
-//         );
-//       })}
-//     </View>
-//   );
-// }
