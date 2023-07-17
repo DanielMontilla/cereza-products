@@ -1,14 +1,13 @@
-import {  BoughtContext, FavoritesContext, ProductsContext, ThemeContext, TransformersContext } from '@/constants/Context';
-import { BOUGHT_STORAGE_KEY, DEFAULT_THEME_CONTEXT_OBJ, DEFAULT_TRANSFORMER_CONTEXT_OBJ, FAVORITES_STORAGE_KEY } from '@/constants/Default';
-import { boughtSchema, favoritesSchema, productsSchema } from '@/constants/Schema';
-import { Product, Data, ThemeType, Transformers } from '@/types';
+import { BOUGHT_STORAGE_KEY, FAVORITES_STORAGE_KEY, THEME_STORAGE_KEY } from '@/constants/Default';
+import { boughtSchema, favoritesSchema, productsSchema, themeSchema } from '@/constants/Schema';
+import { State } from '@/types';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
-import { getItem, setItem } from '@/util';
-import { THEMES } from '@/constants/Themes';
+import { useFavorites, useProducts, useTheme } from '@/stores';
+import { getItem } from '@/storage';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -20,146 +19,86 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [products, setProducts] = useState<Data<Product[]>>({ state: "loading" });
-  const [favorites, setFavorites] = useState<Data<Set<number>>>({ state: "loading" });
-  const [bought, setBought] = useState<Data<Set<number>>>({ state: "loading" });
-  const [appData, setAppData] = useState<Data>({ state: "loading" });
+
+  const [productsState, setProductsState] = useState<State>({ state: 'loading' });
+  const [favoritesState, setFavoritesState] = useState<State>({ state: 'loading' });
+  const [themeState, setThemeState] = useState<State>({ state: 'loading' });
+  const [appState, setAppState] = useState<State>({ state: 'loading' });
+
+  const setProducts = useProducts(state => state.setProducts);
+  const setFavorites = useFavorites(state => state.setFavorites);
+  const setTheme = useTheme(state => state.setTheme);
 
   const [fontLoaded, fontError] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
   });
 
-  const colorScheme = useColorScheme();
-  const [theme, setTheme] = useState<ThemeType>(colorScheme ?? 'dark');
-
   // Loading `Products`
   useEffect(() => {
     fetch("https://dummyjson.com/products")
       .then(response => response.json())
       .then(json => productsSchema.parse(json["products"]))
-      .then(products => setProducts({ state: "completed", value: products }))
-      .catch(e => setProducts({ state: 'error', errors: [e.toString()] }))
-  }, [])
+      .then(products => setProducts(products))
+      .then(_ => setProductsState({ state: 'completed' }))
+      .catch(e => setProductsState({ state: 'error', errors: [e.toString()] }))
+  }, []);
 
   // Loading `Favorites`
   useEffect(() => {
     getItem(FAVORITES_STORAGE_KEY, favoritesSchema, [])
-      .then(favs => setFavorites({ state: "completed", value: new Set(favs) }))
-      .catch(e => setFavorites({ state: 'error', errors: [e.toString()] }))
+      .then(favArr => {
+        console.log(favArr);
+        setFavorites(new Set(favArr));
+      })
+      .then(_ => setFavoritesState({ state: "completed" }))
+      .catch(e => setFavoritesState({ state: 'error', errors: [e.toString()] }))
   }, []);
 
-  // Loading `Bought`
+  // Loading `Theme`
   useEffect(() => {
-    getItem(BOUGHT_STORAGE_KEY, boughtSchema, [])
-      .then(favs => setBought({ state: "completed", value: new Set(favs) }))
-      .catch(e => setBought({ state: 'error', errors: [e.toString()] }))
-  }, []);
+    getItem(THEME_STORAGE_KEY, themeSchema, 'dark')
+    .then(theme => setTheme(theme ?? 'dark'))
+    .then(_ => setThemeState({ state: "completed" }))
+    .catch(e => setThemeState({ state: 'error', errors: [e.toString()] }))
+  }, [])
 
   useEffect(() => {
     const errors: string[] = [];
 
-    if (products.state === "error") errors.push(...products.errors);
-    if (favorites.state === "error") errors.push(...favorites.errors);
-    if (bought.state === "error") errors.push(...bought.errors);
+    if (productsState.state === "error") errors.push(...productsState.errors);
+    if (favoritesState.state === "error") errors.push(...favoritesState.errors);
+    if (themeState.state === "error") errors.push(...themeState.errors);
 
     if (errors.length > 0) {
-      setAppData({ state: "error", errors })
+      setAppState({ state: "error", errors })
       return;
     }
     if (
-      products.state === "completed" &&
-      favorites.state === "completed" &&
-      bought.state === "completed"
+      productsState.state === "completed" &&
+      favoritesState.state === "completed" &&
+      themeState.state === "completed"
     ) {
-      setAppData({ state: "completed", value: undefined });
+      setAppState({ state: "completed" });
     }
-  }, [products, favorites, bought]);
+  }, [productsState, favoritesState, themeState]);
 
+  // Finally show screen when font is loaded and all state is loaded
+  useEffect(() => {
+    if (!fontLoaded || appState.state !== "completed") return;
+    SplashScreen.hideAsync();
+  }, [fontLoaded, appState]);
+
+  // if error show
   useEffect(() => {
     if (fontError) throw fontError;
-    if (appData.state === "error") throw Error(appData.errors.join(" "));
-  }, [fontError, appData]);
+    if (appState.state === "error") throw Error(appState.errors.join(" "));
+  }, [fontError, appState]);
 
-  useEffect(() => {
-    if (!fontLoaded || appData.state !== "completed") return;
-    SplashScreen.hideAsync();
-  }, [fontLoaded, appData]);
+  if (!fontLoaded || appState.state !== 'completed') return null; // only render when everything is loaded
 
-  const uploadFavorites = () => setItem(FAVORITES_STORAGE_KEY, favorites.state === 'completed' ? favorites.value : []);
-  const uploadBought = () => setItem(BOUGHT_STORAGE_KEY, bought.state === 'completed' ? bought.value : []);
-
-  const transformers: Transformers = {
-    addFavorite(id: number) {
-      setFavorites(f => {
-        if (f.state !== 'completed') return f;
-        f.value.add(id);
-        return { state: 'completed', value: f.value };
-      });
-      uploadFavorites();
-    },
-    removeFavorite(id: number) {
-      setFavorites(f => {
-        if (f.state !== 'completed') return f;
-        f.value.delete(id);
-        return { state: 'completed', value: f.value };
-      });
-      uploadFavorites();
-    },
-    addBought(id: number) {
-      setBought(b => {
-        if (b.state !== 'completed') return b;
-        b.value.add(id);
-        return b;
-      });
-      uploadBought();
-    },
-    removeBought(id: number) {
-      setBought(b => {
-        if (b.state !== 'completed') return b;
-        b.value.delete(id);
-        return b;
-      });
-      uploadBought();
-    },
-    clear() {
-      setBought(b => {
-        if (b.state !== 'completed') return b;
-        b.value.clear();
-        return b;
-      });
-      setFavorites(f => {
-        if (f.state !== 'completed') return f;
-        f.value.clear();
-        return f;
-      });
-      uploadFavorites();
-      uploadBought();
-    }
-  }
-
-  if (
-    !fontLoaded ||
-    appData.state !== "completed" ||
-    products.state !== "completed" ||
-    favorites.state !== "completed" ||
-    bought.state !== "completed"
-
-  ) return null;
-
-  return <ThemeContext.Provider value={{...DEFAULT_THEME_CONTEXT_OBJ, type: theme, ...THEMES[theme] }}>
-    <TransformersContext.Provider value={transformers}>
-      <ProductsContext.Provider value={products.value}>
-        <FavoritesContext.Provider value={favorites.value}>
-          <BoughtContext.Provider value={bought.value}>
-            <Stack initialRouteName="(tabs)">
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="product/[id]" options={{ headerShown: false }} />
-              {/* <Stack.Screen name="modal" options={{ presentation: 'modal' }} /> */}
-            </Stack>
-          </BoughtContext.Provider>
-        </FavoritesContext.Provider>
-      </ProductsContext.Provider>
-    </TransformersContext.Provider> 
-  </ThemeContext.Provider>
+  return <Stack initialRouteName="(tabs)">
+    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    <Stack.Screen name="product/[id]" options={{ headerShown: false }} />
+  </Stack>
 }

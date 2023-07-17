@@ -1,7 +1,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as other from '@expo/vector-icons/'
 import { Tabs } from 'expo-router';
-import { useThemeColor } from '@/components/Themed';
+import { useTheme } from '@/stores';
 
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -15,8 +15,10 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
 
-  const tabBarActiveTintColor = useThemeColor('neutral');
-  const tabBackgroundColor = useThemeColor('background');
+  const { getColor } = useTheme();
+
+  const tabBarActiveTintColor = getColor('neutral');
+  const tabBackgroundColor = getColor('background');
 
   return (
     <Tabs

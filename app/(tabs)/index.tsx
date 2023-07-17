@@ -1,11 +1,10 @@
-import { Spacer, View, Void } from "@/components/Themed";
-import { useContext, useMemo, memo } from "react";
+import { Spacer, Void } from "@/components/Themed";
 import ProductCard from "@/components/ProductCard";
-import { FavoritesContext, ProductsContext } from "@/constants/Context";
-import { View as Container, FlatList } from "react-native";
+import { FlatList } from "react-native";
+import { useProducts } from "@/stores";
 
 export default function Products() {
-  const products = useContext(ProductsContext);
+  const products = useProducts(state => state.products)
 
   return <Void save style={{ flex: 1, flexDirection: 'column' }}>
     <FlatList
@@ -13,6 +12,7 @@ export default function Products() {
       renderItem={({ item }) => <ProductCard product={item} />}
       keyExtractor={({ id }, _) => `${id}`}
       ItemSeparatorComponent={() => <Spacer height={8} />}
+      windowSize={10}
     />
   </Void>
 }

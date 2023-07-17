@@ -3,11 +3,11 @@ import { productSchema } from "./constants/Schema";
 
 export type Product = z.infer<typeof productSchema>;
 
-export type Completed<T> = { state: 'completed', value: T }
+export type Completed = { state: 'completed' }
 export type Loading = { state: 'loading' }
 export type Error = { state: 'error', errors: string[] }
 
-export type Data<T = undefined> = Completed<T> | Loading | Error;
+export type State = Completed | Loading | Error;
 
 export type Transformers = {
   addFavorite(id: number): void,

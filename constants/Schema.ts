@@ -22,3 +22,5 @@ export const boughtSchema = favoritesSchema;
 export const productSearchParamsSchema = z.object({
   id: z.string()
 }).refine(({ id }) => ({ id: Number.parseInt(id) }));
+
+export const themeSchema = z.enum(['dark', 'light']);

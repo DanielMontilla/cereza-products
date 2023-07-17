@@ -1,17 +1,32 @@
-import { View, Text, useThemeColor, MonoText, Spacer } from "@/components/Themed";
+import { View, Text, MonoText, Spacer } from "@/components/Themed";
 import { Product } from "@/types";
 import { splitPrice } from "@/util";
 import { View as Container, Image, TouchableWithoutFeedback, TouchableOpacity } from "react-native";
 import FA from '@expo/vector-icons/FontAwesome';
-import { memo, useContext, useMemo, useState } from 'react';
-import { FavoritesContext, TransformersContext } from "@/constants/Context";
-import { router } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useFavorites, useTheme } from "@/stores";
+import { router } from "expo-router";
 
 export default function ProductCard({ product }: { product: Product }) {
-  const favorites = useContext(FavoritesContext);
-  const { addFavorite, removeFavorite } = useContext(TransformersContext);
   const { id } = product;
-  const isFavorite = favorites.has(product.id);
+  const { getColor } = useTheme();
+  const addFavorite = useFavorites(state => state.addFavorite);
+  const removeFavorite = useFavorites(state => state.removeFavorite);
+  const favorites = useFavorites(state => state.favorites);
+
+  const [favorite, setFavorite] = useState<boolean>(useFavorites.getState().favorites.has(id));
+
+  useEffect(() => {
+    if (favorites.has(id) === favorite) return;
+    console.log(`ran @ ${id}`)
+    setFavorite(favorites.has(id))
+  }, [favorites])
+
+  const toggleFavorite = () => {
+    favorite
+      ? removeFavorite(id)
+      : addFavorite(id);
+  }
 
   return <TouchableOpacity
     onPress={ () => router.push({ pathname: `product/[${id}]`, params: { id } }) }
@@ -64,10 +79,10 @@ export default function ProductCard({ product }: { product: Product }) {
       <Container style={{ position: 'absolute', bottom: 0, right: 0, margin: 12, zIndex: 1 }}>
         <TouchableWithoutFeedback
           delayPressIn={0}
-          onPress={ () => isFavorite ? removeFavorite(id) : addFavorite(id) }
+          onPress={ toggleFavorite }
         >
           <Container style={{ padding: 6 }}>
-            <FA size={26} name={ isFavorite ? "heart" : "heart-o" } color={useThemeColor('neutral')}/>
+            <FA size={26} name={ favorite ? "heart" : "heart-o" } color={getColor('neutral')}/>
           </Container>
         </TouchableWithoutFeedback>
       </Container>
@@ -76,6 +91,7 @@ export default function ProductCard({ product }: { product: Product }) {
 }
 
 function Price({ price, discountPercentage, stock }: { price: number, discountPercentage: number, stock: number }) {
+  const { getColor } = useTheme();
   const finalPrice = price * (1 - (discountPercentage / 100));
   const { dollars, cents } = splitPrice(finalPrice);
   const mt = 2;
@@ -90,7 +106,7 @@ function Price({ price, discountPercentage, stock }: { price: number, discountPe
           stock <= 10
             ? <>
                 <Spacer width={6}/>
-                <Container style={{ display: 'flex', gap: 3, flexDirection: 'row',  backgroundColor: useThemeColor('bad'), alignSelf: 'flex-start', marginTop: mt + 1, paddingVertical: 1, paddingHorizontal: 2, borderRadius: 4 }}>
+                <Container style={{ display: 'flex', gap: 3, flexDirection: 'row',  backgroundColor: getColor('bad'), alignSelf: 'flex-start', marginTop: mt + 1, paddingVertical: 1, paddingHorizontal: 2, borderRadius: 4 }}>
                   <Text style={{ lineHeight: 0, fontSize: 10 }}>only</Text>
                   <Text style={{ lineHeight: 0, fontSize: 10, fontWeight: '900' }}>{stock}</Text>
                   <Text style={{ lineHeight: 0, fontSize: 10 }}>left!</Text>
@@ -100,11 +116,11 @@ function Price({ price, discountPercentage, stock }: { price: number, discountPe
         }
       </Container>
       <Container style={{ marginTop: -6, marginLeft: 2, display: 'flex', flexDirection: 'row' }} >
-        <Text style={{ color: useThemeColor('invalidText'), textDecorationLine: 'line-through', fontSize: 14, alignSelf: 'flex-end', marginBottom: mb }}>
+        <Text style={{ color: getColor('invalidText'), textDecorationLine: 'line-through', fontSize: 14, alignSelf: 'flex-end', marginBottom: mb }}>
           { price.toFixed(2) }
         </Text>
         <Spacer width={3}/>
-        <Container style={{ display: 'flex', flexDirection: 'row',  backgroundColor: useThemeColor('good'), alignSelf: 'flex-end', marginBottom: mb, paddingVertical: 1, paddingHorizontal: 2, borderRadius: 4 }}>
+        <Container style={{ display: 'flex', flexDirection: 'row',  backgroundColor: getColor('good'), alignSelf: 'flex-end', marginBottom: mb, paddingVertical: 1, paddingHorizontal: 2, borderRadius: 4 }}>
           <Text style={{ lineHeight: 0, fontSize: 10, alignSelf: 'flex-end' }}>-%</Text>
           <Spacer width={1}/>
           <Text style={{ lineHeight: 0, fontSize: 10, fontWeight: '700' }}>{Math.round(discountPercentage).toFixed(0)}</Text>
@@ -114,12 +130,13 @@ function Price({ price, discountPercentage, stock }: { price: number, discountPe
 }
 
 function Rating({ rating }: { rating: number }) {
+  const { getColor } = useTheme();
   const stars: ('star' | 'star-o' | 'star-half-o')[] = [];
   const wholePart = Math.floor(rating);
   const decimalPart = rating - wholePart;
   const emptyPart = Math.floor(5 - rating);
 
-  const color = useThemeColor('neutral');
+  const color = getColor('neutral');
 
   for (const _ of Array(wholePart)) {
     stars.push('star')
