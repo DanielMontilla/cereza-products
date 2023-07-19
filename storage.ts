@@ -19,3 +19,6 @@ export async function getItem<T>(key: string, schema: z.Schema<T>, defaultValue:
     return result.data;
   }
 }
+export async function clear(): Promise<void> {
+  await AsyncStorage.clear();
+}

@@ -5,9 +5,9 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
 import { useBought, useFavorites, useProducts, useTheme } from '@/stores';
 import { getItem, setItem } from '@/storage';
+import { LogBox } from 'react-native';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -19,6 +19,8 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+
+  LogBox.ignoreAllLogs();
 
   const [productsState, setProductsState] = useState<State>({ state: 'loading' });
   const [favoritesState, setFavoritesState] = useState<State>({ state: 'loading' });
