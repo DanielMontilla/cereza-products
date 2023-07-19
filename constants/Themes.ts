@@ -4,9 +4,9 @@ export const THEMES = {
   light: {
     text: "#1A1A1A",
     invalidText: "#8B8B8B",
-    background: "#E6E6E6",
-    void: "#CCCCCC",
-    neutral: "#2F85DC",
+    background: "#cccccc",
+    void: "#E5E5E5",
+    neutral: "#595959",
     good: "#33A151",
     bad: "#BA4C4C"
   },

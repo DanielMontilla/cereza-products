@@ -1,7 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { z } from "zod";
-import { FAVORITES_STORAGE_KEY } from "./constants/Default";
-import { favoritesSchema } from "./constants/Schema";
 
 export async function setItem<T>(key: string, item: T): Promise<void> {
   await AsyncStorage.setItem(key, JSON.stringify(item));

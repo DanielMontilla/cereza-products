@@ -27,7 +27,6 @@ export const useFavorites = create<{
   setFavorites: (favorites: Set<number>) => void;
   addFavorite: (id: number) => void;
   removeFavorite: (id: number) => void;
-  // toggleFavorite: (id: number) => void;
 }>(
   (set, get) => ({
     favorites: new Set(),
@@ -37,6 +36,22 @@ export const useFavorites = create<{
       favorites.delete(id);
       return { favorites: new Set(favorites) };
     }),
-    // toggleFavorite: (id) => get().favorites.has(id) ? get().removeFavorite(id) : get().addFavorite(id)
   }),
 );
+export const useBought = create<{
+  bought: Set<number>;
+  setBought: (favorites: Set<number>) => void;
+  addBought: (id: number) => void;
+  removeBought: (id: number) => void;
+}>(
+  (set, get) => ({
+    bought: new Set(),
+    setBought: (bought) => set(_ => ({ bought })),
+    addBought: (id) => set(({ bought }) => ({ bought: new Set(bought.add(id)) })),
+    removeBought: (id) => set(({ bought }) => {
+      bought.delete(id);
+      return { bought: new Set(bought) };
+    }),
+  }),
+);
+

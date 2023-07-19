@@ -1,7 +1,7 @@
-import { Spacer, View, Void } from "@/components/Themed";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { Spacer, Void } from "@/components/Themed";
+import { useCallback, useState } from "react";
 import ProductCard from "@/components/ProductCard";
-import { View as Container, FlatList } from "react-native";
+import { FlatList } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useFavorites, useProducts } from "@/stores";
 

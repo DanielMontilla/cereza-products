@@ -4,7 +4,7 @@
  */
 
 import { useTheme } from '@/stores';
-import { Text as DefaultText, View as DefaultView } from 'react-native';
+import { Text as DefaultText, View as DefaultView, ScrollView as DefaultScrollView } from 'react-native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 export function Text(props: DefaultText['props']) {
@@ -30,6 +30,12 @@ export function Void(props: DefaultView['props'] & { save?: boolean }) {
   const backgroundColor = getColor('void');
   const { style, save, ...rest } = props
   return <DefaultView style={[{ backgroundColor, flex: 1, paddingTop: save ? getStatusBarHeight() : 0 }, style]} {...rest} />;
+}
+export function ScrollView(props: DefaultScrollView['props'] & { save?: boolean }) {
+  const { getColor } = useTheme();
+  const backgroundColor = getColor('void');
+  const { style, save, ...rest } = props
+  return <DefaultScrollView style={[{ backgroundColor, flex: 1, paddingTop: save ? getStatusBarHeight() : 0 }, style]} {...rest} />;
 }
 
 export function Spacer({ height, width }: { height?: number, width?: number }) {

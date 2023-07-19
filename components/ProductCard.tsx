@@ -3,29 +3,48 @@ import { Product } from "@/types";
 import { splitPrice } from "@/util";
 import { View as Container, Image, TouchableWithoutFeedback, TouchableOpacity } from "react-native";
 import FA from '@expo/vector-icons/FontAwesome';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useFavorites, useTheme } from "@/stores";
-import { router } from "expo-router";
+import { useCallback, useEffect, useState } from 'react';
+import { useBought, useFavorites, useTheme } from "@/stores";
+import { router, useFocusEffect } from "expo-router";
+import RatingTag from '@/components/RatingTag';
 
 export default function ProductCard({ product }: { product: Product }) {
   const { id } = product;
   const { getColor } = useTheme();
-  const addFavorite = useFavorites(state => state.addFavorite);
-  const removeFavorite = useFavorites(state => state.removeFavorite);
-  const favorites = useFavorites(state => state.favorites);
 
-  const [favorite, setFavorite] = useState<boolean>(useFavorites.getState().favorites.has(id));
+  const { favorites, addFavorite, removeFavorite } = useFavorites.getState();
+  const { bought } = useBought.getState();
 
-  useEffect(() => {
-    if (favorites.has(id) === favorite) return;
-    console.log(`ran @ ${id}`)
-    setFavorite(favorites.has(id))
-  }, [favorites])
+  const [favorite, setFavorite] = useState<boolean>(favorites.has(id));
+  const [canToggleFav, setCanToggleFav] = useState<boolean>(true);
+
+  const [isBought, setIsBought] = useState(bought.has(id));
+
+  useFocusEffect(
+    () => {
+      const newFav = favorites.has(id);
+      const newBought = bought.has(id);
+      if (newFav == favorite && newBought == isBought) return;
+      setCanToggleFav(false);
+      setFavorite(newFav);
+      setIsBought(newBought);
+      setCanToggleFav(true);
+    }
+  )
 
   const toggleFavorite = () => {
-    favorite
-      ? removeFavorite(id)
-      : addFavorite(id);
+    if (!canToggleFav) return;
+    setCanToggleFav(false);
+
+    const newFav = !favorite;
+
+    newFav
+      ? addFavorite(id)
+      : removeFavorite(id);
+
+    setFavorite(newFav);
+
+    setCanToggleFav(true);
   }
 
   return <TouchableOpacity
@@ -71,7 +90,7 @@ export default function ProductCard({ product }: { product: Product }) {
               { product.brand }
             </Text>
             <Spacer height={2}/>
-            <Rating {...product} />
+            <RatingTag {...product} />
             <Price {...product} />
           </Container>
         </Container>
@@ -86,6 +105,15 @@ export default function ProductCard({ product }: { product: Product }) {
           </Container>
         </TouchableWithoutFeedback>
       </Container>
+      {
+        isBought
+          ? <Container style={{ position: 'absolute', top: 0, left: 0, margin: 14, zIndex: 1, backgroundColor: '#B2B2B2', borderRadius: 32,  }}>
+              <Container style={{ padding: 3 }}>
+                <FA size={22} name="check" color={getColor('good')}/>
+              </Container>
+            </Container>
+          : <></>
+      }
     </View>
   </TouchableOpacity>
 }
@@ -127,37 +155,5 @@ function Price({ price, discountPercentage, stock }: { price: number, discountPe
         </Container>
       </Container>
   </Container>
-}
-
-function Rating({ rating }: { rating: number }) {
-  const { getColor } = useTheme();
-  const stars: ('star' | 'star-o' | 'star-half-o')[] = [];
-  const wholePart = Math.floor(rating);
-  const decimalPart = rating - wholePart;
-  const emptyPart = Math.floor(5 - rating);
-
-  const color = getColor('neutral');
-
-  for (const _ of Array(wholePart)) {
-    stars.push('star')
-  }
-
-  if (decimalPart < 1/3) {
-    stars.push("star-o")
-  } else if (decimalPart < 2/3) {
-    stars.push("star-half-o")
-  } else {
-    stars.push("star")
-  }
-
-  for (const _ of Array(emptyPart)) {
-    stars.push("star-o")
-  }
-
-  return (
-    <Container style={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
-      { stars.map((s, i) => <FA name={s} color={color} key={i} />) }
-    </Container>
-  )
 }
 

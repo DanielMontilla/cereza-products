@@ -28,11 +28,11 @@ export default function TabLayout() {
           backgroundColor: tabBackgroundColor,
         },
       }}
-      initialRouteName="products"
     >
       <Tabs.Screen
         name="index"
         options={{
+          title: "products",
           headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="shopping-cart" color={color} />,
         }}
@@ -42,6 +42,13 @@ export default function TabLayout() {
         options={{
           headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="star" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
         }}
       />
     </Tabs>
